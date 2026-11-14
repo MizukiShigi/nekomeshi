@@ -40,3 +40,10 @@ export function getCatAge(birthday: string, now: Date | string = new Date()): Ca
 export function formatCatAge({ years, months }: CatAge): string {
   return years > 0 ? `${years}歳${months}か月` : `${months}か月`
 }
+
+/** 誕生日の表示文字列。「2024-08-01（2歳3か月）」。未登録・未来・不正な日付では年齢を付けない。 */
+export function formatBirthday(birthday: string | null, now: Date | string = new Date()): string | null {
+  if (!birthday) return null
+  const age = getCatAge(birthday, now)
+  return age ? `${birthday}（${formatCatAge(age)}）` : birthday
+}

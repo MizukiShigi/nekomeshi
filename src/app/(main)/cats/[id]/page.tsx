@@ -1,15 +1,9 @@
 import { getCat } from '@/actions/cats'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar } from '@/components/ui/avatar'
-import { formatCatAge, getCatAge } from '@/lib/cat-age'
+import { formatBirthday } from '@/lib/cat-age'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-
-function formatBirthday(birthday: string | null) {
-  if (!birthday) return null
-  const age = getCatAge(birthday)
-  return age ? `${birthday}（${formatCatAge(age)}）` : birthday
-}
 
 function formatSex(sex: string | null) {
   switch (sex) {

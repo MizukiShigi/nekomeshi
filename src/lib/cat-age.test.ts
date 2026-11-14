@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatCatAge, getCatAge } from './cat-age'
+import { formatBirthday, formatCatAge, getCatAge } from './cat-age'
 
 const at = (iso: string) => new Date(iso)
 
@@ -47,5 +47,23 @@ describe('formatCatAge', () => {
     expect(formatCatAge({ years: 0, months: 5 })).toBe('5か月')
     expect(formatCatAge({ years: 0, months: 0 })).toBe('0か月')
     expect(formatCatAge({ years: 1, months: 0 })).toBe('1歳0か月')
+  })
+})
+
+describe('formatBirthday', () => {
+  it('誕生日に年齢を添える', () => {
+    expect(formatBirthday('2024-08-01', '2026-11-15')).toBe('2024-08-01（2歳3か月）')
+    expect(formatBirthday('2026-06-10', '2026-11-15')).toBe('2026-06-10（5か月）')
+    expect(formatBirthday('2026-11-01', '2026-11-15')).toBe('2026-11-01（0か月）')
+  })
+  it('null は null', () => {
+    expect(formatBirthday(null, '2026-11-15')).toBeNull()
+  })
+  it('未来の日付は日付のみ', () => {
+    expect(formatBirthday('2026-11-16', '2026-11-15')).toBe('2026-11-16')
+  })
+  it('不正な値は値のみ', () => {
+    expect(formatBirthday('abc', '2026-11-15')).toBe('abc')
+    expect(formatBirthday('2026-02-30', '2026-11-15')).toBe('2026-02-30')
   })
 })
