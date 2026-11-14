@@ -1,8 +1,15 @@
 import { getCat } from '@/actions/cats'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar } from '@/components/ui/avatar'
+import { formatCatAge, getCatAge } from '@/lib/cat-age'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+
+function formatBirthday(birthday: string | null) {
+  if (!birthday) return null
+  const age = getCatAge(birthday)
+  return age ? `${birthday}（${formatCatAge(age)}）` : birthday
+}
 
 function formatSex(sex: string | null) {
   switch (sex) {
@@ -52,7 +59,7 @@ export default async function CatProfilePage({
           </CardHeader>
           <CardContent>
             <InfoRow label="品種" value={cat.breed} />
-            <InfoRow label="誕生日" value={cat.birthday} />
+            <InfoRow label="誕生日" value={formatBirthday(cat.birthday)} />
             <InfoRow label="体重" value={cat.weight_kg ? `${cat.weight_kg} kg` : null} />
             <InfoRow label="性別" value={formatSex(cat.sex)} />
             <InfoRow label="避妊・去勢済み" value={cat.is_neutered ? 'はい' : 'いいえ'} />
