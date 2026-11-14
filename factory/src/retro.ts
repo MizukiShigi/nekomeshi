@@ -86,8 +86,10 @@ export async function retro(ctx: Ctx, sinceIso: string): Promise<void> {
     latestEval(ctx),
   ].join('\n')
   const date = new Date().toISOString().slice(0, 10)
-  const branch = `${ctx.cfg.branchPrefix}retro-${date}`
-  const wt = join(ctx.stateDir, 'wt', `retro-${date}`)
+  // The time keeps a second retro on the same day from force-pushing over the first one's branch.
+  const stamp = new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '')
+  const branch = `${ctx.cfg.branchPrefix}retro-${stamp}`
+  const wt = join(ctx.stateDir, 'wt', `retro-${stamp}`)
   G.addWorktree(ctx.repoDir, wt, branch, `origin/${ctx.cfg.baseBranch}`)
   try {
     mkdirSync(join(wt, 'docs/factory/retro'), { recursive: true })
