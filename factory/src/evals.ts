@@ -1,6 +1,6 @@
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
-import { IMPLEMENT_SCHEMA, READ_TOOLS, REVIEW_SCHEMA, WRITE_TOOLS, runClaude, type ImplementOutput } from './claude.ts'
+import { ACCEPTANCE_REVIEW_SCHEMA, IMPLEMENT_SCHEMA, READ_TOOLS, REVIEW_SCHEMA, WRITE_TOOLS, runClaude, type ImplementOutput } from './claude.ts'
 import type { Review, Severity } from './decide.ts'
 import * as G from './git.ts'
 import { fill, log, type Ctx } from './pipeline.ts'
@@ -115,7 +115,7 @@ export async function runReviewEval(ctx: Ctx, evalDir: string, id: string, stamp
       prompt: text,
       model: ctx.cfg.models.review,
       allowedTools: READ_TOOLS,
-      schema: REVIEW_SCHEMA,
+      schema: meta.perspective === 'acceptance' ? ACCEPTANCE_REVIEW_SCHEMA : REVIEW_SCHEMA,
       budgetUsd: ctx.cfg.budgetsUsd.review,
       timeoutMs: ctx.cfg.timeoutsMin.review * 60_000,
       logFile: join(ctx.stateDir, 'evals', stamp, `review-${id}.jsonl`),

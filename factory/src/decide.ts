@@ -59,7 +59,10 @@ export function decideLoop(o: {
       reasons.push(`[${f.severity}] ${f.file}${f.line ? `:${f.line}` : ''} ${f.title}`)
     }
     for (const c of unmetCriteria(o.reviews)) reasons.push(`unmet: ${c.criterion}`)
-    if (!o.reviews.some((r) => r.perspective === 'acceptance')) reasons.push('acceptance review missing')
+    const acc = o.reviews.find((r) => r.perspective === 'acceptance')
+    // A summary saying "all criteria met" is not evidence; only per-criterion entries are.
+    if (!acc) reasons.push('acceptance review missing')
+    else if (!acc.acceptance || acc.acceptance.length === 0) reasons.push('acceptance review listed no criteria')
   }
   if (o.changedFiles.length === 0) return { action: 'blocked', reasons: ['no changes'] }
   if (reasons.length === 0) return { action: 'ready', reasons: [] }
