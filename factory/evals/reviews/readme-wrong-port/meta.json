@@ -1,0 +1,8 @@
+{
+  "perspective": "acceptance",
+  "expected": "flag",
+  "file": "README.md",
+  "minSeverity": "medium",
+  "issueTitle": "README に開発サーバーの起動手順を書く",
+  "issueBody": "## What to build\nREADME に `pnpm dev` で開発サーバーを起動する手順を書く\n\n## Acceptance criteria\n- [ ] README の手順どおりに `pnpm dev` を実行すると、記載したポートで開発サーバーが起動する\n\n## Out of scope\n- package.json の変更\n\n## Context\n`package.json` の `dev` スクリプトは `next dev` で、ポートの指定はない\n"
+}

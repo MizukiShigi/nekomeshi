@@ -12,7 +12,7 @@
 ## 開発コマンド
 
 ```bash
-pnpm dev          # 開発サーバー起動 (port 54331)
+pnpm dev          # 開発サーバー起動 (`next dev` のまま。ポート指定なしで既定の 3000。54331 にするなら `pnpm dev -p 54331`)
 pnpm build        # プロダクションビルド
 pnpm lint         # ESLint実行
 npx supabase db push  # マイグレーション適用

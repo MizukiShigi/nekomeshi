@@ -1,0 +1,16 @@
+diff --git a/README.md b/README.md
+index 1111111..2222222 100644
+--- a/README.md
++++ b/README.md
+@@ -24,6 +24,10 @@
+      - `SUPABASE_SERVICE_ROLE_KEY`（サーバー専用。公開しないこと）
+
++3. 開発サーバーを起動する（ポート 54331）
++
++   ```bash
++   pnpm dev
++   ```
++
++   http://localhost:54331 を開いて確認します。
++
+ ## 検証
