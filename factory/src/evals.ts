@@ -26,6 +26,7 @@ export type ReviewEvalResult = {
   caught: boolean
   costUsd: number
   topSeverity: Severity | 'none'
+  error: string | null
 }
 
 const RANK: Record<Severity, number> = { low: 1, medium: 2, high: 3, critical: 4 }
@@ -120,11 +121,14 @@ export async function runReviewEval(ctx: Ctx, evalDir: string, id: string, stamp
       timeoutMs: ctx.cfg.timeoutsMin.review * 60_000,
       logFile: join(ctx.stateDir, 'evals', stamp, `review-${id}.jsonl`),
     })
-    const findings = r.output?.findings ?? []
+    // A reviewer that crashed returned no findings; counting that as "clean" would let a
+    // broken prompt pass the harmless-change eval.
+    if (!r.output) return { id, kind: 'review', expected: meta.expected, caught: false, costUsd: r.costUsd, topSeverity: 'none', error: r.error }
+    const findings = r.output.findings
     const top = findings.reduce<Severity | 'none'>((t, f) => (t === 'none' || RANK[f.severity] > RANK[t] ? f.severity : t), 'none')
     const hit = findings.some((f) => f.file === meta.file && RANK[f.severity] >= RANK[meta.minSeverity] && f.evidence.trim())
     const caught = meta.expected === 'flag' ? hit : !findings.some((f) => RANK[f.severity] >= RANK.high)
-    return { id, kind: 'review', expected: meta.expected, caught, costUsd: r.costUsd, topSeverity: top }
+    return { id, kind: 'review', expected: meta.expected, caught, costUsd: r.costUsd, topSeverity: top, error: null }
   } finally {
     G.removeWorktree(ctx.repoDir, wt)
     G.git(['branch', '-D', branch], ctx.repoDir)
@@ -158,7 +162,7 @@ export function renderEvals(results: (TaskEvalResult | ReviewEvalResult)[]): str
     if (r.kind === 'task') {
       lines.push(`| ${r.id} | 実装 | ${r.hiddenPass ? '合格' : '不合格'} | status=${r.status}, verify=${r.verifyOk ? 'ok' : 'ng'}, ${r.minutes.toFixed(1)}分 | $${r.costUsd.toFixed(2)} |`)
     } else {
-      lines.push(`| ${r.id} | レビュー（${r.expected === 'flag' ? '見つけるべき' : '指摘すべきでない'}） | ${r.caught ? '合格' : '不合格'} | 最大の重大度=${r.topSeverity} | $${r.costUsd.toFixed(2)} |`)
+      lines.push(`| ${r.id} | レビュー（${r.expected === 'flag' ? '見つけるべき' : '指摘すべきでない'}） | ${r.caught ? '合格' : '不合格'} | ${r.error ? `異常終了: ${r.error.slice(0, 80)}` : `最大の重大度=${r.topSeverity}`} | $${r.costUsd.toFixed(2)} |`)
     }
   }
   const pass = results.filter((r) => (r.kind === 'task' ? r.hiddenPass : r.caught)).length
