@@ -50,7 +50,8 @@ export function katakanaToHiragana(str: string): string {
  * スペース区切りでAND検索対応
  */
 export function expandSearchQuery(query: string): string[] {
-  const trimmed = query.trim()
+  // NFKC: 半角カナ→全角カナ、全角英数→半角英数
+  const trimmed = query.normalize('NFKC').trim()
   if (!trimmed) return []
 
   // 全角・半角スペースで分割
