@@ -50,4 +50,8 @@ next-env.d.ts
 supabase/.temp/
 
 # claude
-.claude/
+.claude/*
+!.claude/skills/
+
+# factory runner state (worktrees, logs, eval results)
+.factory/

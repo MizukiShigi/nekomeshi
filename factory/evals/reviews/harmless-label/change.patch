@@ -1,0 +1,13 @@
+diff --git a/src/lib/constants.ts b/src/lib/constants.ts
+index f58b4b6..d29bf69 100644
+--- a/src/lib/constants.ts
++++ b/src/lib/constants.ts
+@@ -3,7 +3,7 @@ export const AMOUNT_PRESETS = [30, 50, 80] as const
+ export const APPETITE_LABELS = [
+   '全く食べない',
+   '少し食べた',
+-  'まあまあ',
++  'ふつう',
+   'よく食べた',
+   '完食！',
+ ] as const

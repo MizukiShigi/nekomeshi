@@ -37,10 +37,20 @@ jobs:
           list-files: shell
           filters: |
             critical:
-              # 必要になったらここに critical path を追加する。
-              # 空リストだと paths-filter がエラーになるので、絶対にマッチしない
-              # ダミーパスを置いている。
-              - '__placeholder_never_matches__'
+              # factory/config.json の humanReviewGlobs と同じ並びにする
+              # （factory/src/judge-sync.test.ts がずれを検出する）
+              - 'factory/**'
+              - '.github/**'
+              - '.claude/**'
+              - 'supabase/migrations/**'
+              - 'terraform/**'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - 'src/middleware.ts'
+              - 'src/actions/auth.ts'
+              - 'src/lib/supabase/**'
+              - '**/.env*'
+              - 'docs/adr/**'
 
   static-allow:
     name: Static allow (trivial paths)

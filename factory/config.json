@@ -1,0 +1,46 @@
+{
+  "repo": "MizukiShigi/nekomeshi",
+  "baseBranch": "main",
+  "branchPrefix": "factory/",
+  "labels": {
+    "ready": "ready-for-agent",
+    "inProgress": "agent:in-progress",
+    "blocked": "agent:blocked",
+    "fix": "agent:fix",
+    "mergeOk": "factory:merge-ok",
+    "judgeNeedsReview": "needs-human-review",
+    "judgeSkipReview": "skip-human-review"
+  },
+  "models": {
+    "implement": "claude-sonnet-5-5",
+    "review": "claude-sonnet-5-5",
+    "fix": "claude-sonnet-5-5",
+    "retro": "claude-sonnet-5-5"
+  },
+  "budgetsUsd": { "implement": 6, "review": 2, "fix": 4, "retro": 3 },
+  "timeoutsMin": { "implement": 40, "review": 15, "fix": 25, "retro": 20, "github": 25 },
+  "maxFixRounds": 2,
+  "maxOpenAgentPRs": 3,
+  "maxDiffLines": 1000,
+  "perspectives": ["acceptance", "security", "standards"],
+  "install": "pnpm install --frozen-lockfile --prefer-offline",
+  "verify": "pnpm verify",
+  "humanReviewGlobs": [
+    "factory/**",
+    ".github/**",
+    ".claude/**",
+    "supabase/migrations/**",
+    "terraform/**",
+    "package.json",
+    "pnpm-lock.yaml",
+    "src/middleware.ts",
+    "src/actions/auth.ts",
+    "src/lib/supabase/**",
+    "**/.env*",
+    "docs/adr/**"
+  ],
+  "merge": {
+    "mode": "shadow",
+    "liveGlobs": ["**/*.md"]
+  }
+}

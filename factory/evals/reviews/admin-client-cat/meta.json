@@ -1,0 +1,8 @@
+{
+  "perspective": "security",
+  "expected": "flag",
+  "file": "src/actions/cats.ts",
+  "minSeverity": "high",
+  "issueTitle": "猫プロフィールの取得を速くする",
+  "issueBody": "## What to build\n猫のプロフィール画面の表示が遅いので、`getCat` の取得を速くする\n\n## Acceptance criteria\n- [ ] 猫のプロフィールの取得が今より速い\n\n## Out of scope\n- 画面の変更\n"
+}

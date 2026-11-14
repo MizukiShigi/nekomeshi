@@ -1,0 +1,8 @@
+{
+  "perspective": "security",
+  "expected": "clean",
+  "file": "src/lib/constants.ts",
+  "minSeverity": "high",
+  "issueTitle": "食欲の3段階目の表記を「ふつう」にする",
+  "issueBody": "## What to build\n食欲評価の3段階目の表記「まあまあ」を「ふつう」に変える\n\n## Acceptance criteria\n- [ ] 食欲評価の3段階目が「ふつう」と表示される\n\n## Out of scope\n- ほかの段階の表記\n"
+}
