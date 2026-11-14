@@ -1,10 +1,10 @@
-import type { Ctx } from './pipeline.ts'
+import { isIssueBranch, type Ctx } from './pipeline.ts'
 import { parseRecords, totalCost, type RunRecord } from './record.ts'
 
 export type PrFate = { number: number; mergeOk: boolean; mergedAt: string | null; state: string; humanFix: boolean }
 
 export function collect(ctx: Ctx): { records: RunRecord[]; prs: PrFate[] } {
-  const prs = ctx.gh.listPrs('all').filter((p) => p.headRefName.startsWith(ctx.cfg.branchPrefix))
+  const prs = ctx.gh.listPrs('all').filter((p) => isIssueBranch(ctx, p.headRefName))
   const issues = JSON.parse(ctx.gh.raw(['issue', 'list', '--state', 'all', '--limit', '200', '--json', 'number,comments'])) as { number: number; comments: { body: string }[] }[]
   const bodies = [...prs.flatMap((p) => p.comments.map((c) => c.body)), ...issues.flatMap((i) => i.comments.map((c) => c.body))]
   const seen = new Set<string>()

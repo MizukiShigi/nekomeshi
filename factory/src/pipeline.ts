@@ -104,8 +104,19 @@ export function branchFor(ctx: Ctx, issue: number): string {
   return `${ctx.cfg.branchPrefix}issue-${issue}`
 }
 
+// Only issue branches count: people also open hand-written PRs under the same prefix.
+export function isIssueBranch(ctx: Ctx, branch: string): boolean {
+  return branch.startsWith(`${ctx.cfg.branchPrefix}issue-`)
+}
+
 export function openFactoryPrs(ctx: Ctx): GhPr[] {
-  return ctx.gh.listPrs('open').filter((p) => p.headRefName.startsWith(ctx.cfg.branchPrefix))
+  return ctx.gh.listPrs('open').filter((p) => isIssueBranch(ctx, p.headRefName))
+}
+
+function postFixResponses(ctx: Ctx, prNumber: number, title: string, out: FixOutput): void {
+  const cell = (t: string) => t.replace(/\|/g, '\\|').replace(/\n/g, ' ')
+  const rows = out.responses.map((x) => `| ${cell(x.item).slice(0, 160)} | ${x.action === 'fixed' ? '直した' : '直していない'} | ${cell(x.reason)} |`)
+  ctx.gh.comment(prNumber, ['<!-- factory-fix -->', `### ${title}`, '', out.summary, '', '| 指摘 | 対応 | 理由 |', '|---|---|---|', ...rows].join('\n'))
 }
 
 async function runReviews(ctx: Ctx, wt: string, issue: GhIssue, runId: string, round: number, previous: Review[] | null): Promise<{ reviews: Review[]; costs: RunRecord['steps'] }> {
@@ -267,10 +278,7 @@ async function qualityLoop(ctx: Ctx, rec: RunRecord, wt: string, branch: string,
     rec.steps.push({ step: `fix-${rec.fixRounds}`, costUsd: f.costUsd, durationMs: f.durationMs, ok: f.ok })
     commitLeftovers(wt)
     G.push(wt, branch)
-    if (f.output) {
-      const rows = f.output.responses.map((x) => `| ${x.item.replace(/\|/g, '\\|').replace(/\n/g, ' ').slice(0, 160)} | ${x.action === 'fixed' ? '直した' : '直していない'} | ${x.reason.replace(/\|/g, '\\|').replace(/\n/g, ' ')} |`)
-      ctx.gh.comment(prNumber, [`<!-- factory-fix -->`, `### 修正 ${rec.fixRounds} 回目`, '', f.output.summary, '', '| 指摘 | 対応 | 理由 |', '|---|---|---|', ...rows].join('\n'))
-    }
+    if (f.output) postFixResponses(ctx, prNumber, `修正 ${rec.fixRounds} 回目`, f.output)
     if (f.output) previous = reviews
   }
 }
@@ -429,7 +437,7 @@ export async function processIssue(ctx: Ctx, n: number): Promise<RunRecord | nul
 export async function processFixRequest(ctx: Ctx, prNumber: number): Promise<RunRecord | null> {
   const L = ctx.cfg.labels
   const pr = ctx.gh.pr(prNumber)
-  if (!pr.headRefName.startsWith(ctx.cfg.branchPrefix) || pr.state !== 'OPEN') return null
+  if (!isIssueBranch(ctx, pr.headRefName) || pr.state !== 'OPEN') return null
   const actor = ctx.gh.labelActor(prNumber, L.fix)
   if (!actor || !ctx.gh.canWrite(actor)) {
     log(`PR #${prNumber}: ${L.fix} added by ${actor} without write access; ignored`)
@@ -475,6 +483,7 @@ export async function processFixRequest(ctx: Ctx, prNumber: number): Promise<Run
       logFile: join(ctx.stateDir, 'logs', rec.runId, 'fix-human.jsonl'),
     })
     rec.steps.push({ step: 'fix-human', costUsd: f.costUsd, durationMs: f.durationMs, ok: f.ok })
+    if (f.output) postFixResponses(ctx, prNumber, '人間の依頼による修正', f.output)
     commitLeftovers(wt)
     G.push(wt, pr.headRefName)
     const loop = await qualityLoop(ctx, rec, wt, pr.headRefName, issue, prNumber)
