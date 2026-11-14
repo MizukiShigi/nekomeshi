@@ -135,6 +135,16 @@ export const REVIEW_SCHEMA = {
   required: ['perspective', 'summary', 'findings'],
 }
 
+// The acceptance reviewer must list every criterion; an empty list would read as "nothing to check".
+export const ACCEPTANCE_REVIEW_SCHEMA = {
+  ...REVIEW_SCHEMA,
+  properties: {
+    ...REVIEW_SCHEMA.properties,
+    acceptance: { ...REVIEW_SCHEMA.properties.acceptance, minItems: 1 },
+  },
+  required: [...REVIEW_SCHEMA.required, 'acceptance'],
+}
+
 export const IMPLEMENT_SCHEMA = {
   type: 'object',
   properties: {

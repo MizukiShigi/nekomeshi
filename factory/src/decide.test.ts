@@ -57,6 +57,13 @@ describe('decideLoop', () => {
     expect(decideLoop({ ...base, verify: { ok: true, output: '' }, reviews }).action).toBe('fix')
   })
 
+  it('does not accept an acceptance review without per-criterion entries', () => {
+    const reviews: Review[] = [{ perspective: 'acceptance', summary: 'all six criteria are met', findings: [] }]
+    const d = decideLoop({ ...base, verify: { ok: true, output: '' }, reviews })
+    expect(d.action).toBe('fix')
+    expect(d.reasons).toEqual(['acceptance review listed no criteria'])
+  })
+
   it('blocks when nothing changed', () => {
     expect(decideLoop({ ...base, changedFiles: [], verify: { ok: true, output: '' }, reviews: clean }).action).toBe('blocked')
   })

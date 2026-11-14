@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import {
-  FIX_SCHEMA, IMPLEMENT_SCHEMA, READ_TOOLS, REVIEW_SCHEMA, WRITE_TOOLS, runClaude,
+  ACCEPTANCE_REVIEW_SCHEMA, FIX_SCHEMA, IMPLEMENT_SCHEMA, READ_TOOLS, REVIEW_SCHEMA, WRITE_TOOLS, runClaude,
   type FixOutput, type ImplementOutput,
 } from './claude.ts'
 import { parseConfig, type FactoryConfig } from './config.ts'
@@ -130,7 +130,7 @@ async function runReviews(ctx: Ctx, wt: string, issue: GhIssue, runId: string, r
       prompt: text,
       model: ctx.cfg.models.review,
       allowedTools: READ_TOOLS,
-      schema: REVIEW_SCHEMA,
+      schema: p === 'acceptance' ? ACCEPTANCE_REVIEW_SCHEMA : REVIEW_SCHEMA,
       budgetUsd: ctx.cfg.budgetsUsd.review,
       timeoutMs: ctx.cfg.timeoutsMin.review * 60_000,
       logFile: join(ctx.stateDir, 'logs', runId, `review-${p}-${round}.jsonl`),
