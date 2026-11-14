@@ -141,13 +141,23 @@ export async function runEvals(ctx: Ctx, evalDir: string, only: string[]): Promi
   const reviews = existsSync(join(evalDir, 'reviews')) ? readdirSync(join(evalDir, 'reviews')) : []
   const pick = (id: string) => only.length === 0 || only.includes(id)
   const results: (TaskEvalResult | ReviewEvalResult)[] = []
+  // A broken case (for example a patch that no longer applies) fails on its own and is
+  // reported, instead of aborting the whole run and hiding the other results.
   for (const id of reviews.filter(pick)) {
     log(`eval review ${id}`)
-    results.push(await runReviewEval(ctx, evalDir, id, stamp))
+    try {
+      results.push(await runReviewEval(ctx, evalDir, id, stamp))
+    } catch (e) {
+      results.push({ id, kind: 'review', expected: 'flag', caught: false, costUsd: 0, topSeverity: 'none', error: `case broken: ${(e as Error).message.slice(0, 200)}` })
+    }
   }
   for (const id of tasks.filter(pick)) {
     log(`eval task ${id}`)
-    results.push(await runTaskEval(ctx, evalDir, id, stamp))
+    try {
+      results.push(await runTaskEval(ctx, evalDir, id, stamp))
+    } catch (e) {
+      results.push({ id, kind: 'task', status: `case broken: ${(e as Error).message.slice(0, 200)}`, verifyOk: false, hiddenPass: false, costUsd: 0, minutes: 0 })
+    }
   }
   const out = join(ctx.stateDir, 'evals', `${stamp}.json`)
   mkdirSync(dirname(out), { recursive: true })

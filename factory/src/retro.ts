@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { WRITE_TOOLS, runClaude } from './claude.ts'
-import { renderEvals } from './evals.ts'
+import { renderEvals, runEvals } from './evals.ts'
 import * as G from './git.ts'
 import { collect, summarize } from './metrics.ts'
 import { log, type Ctx } from './pipeline.ts'
@@ -108,6 +108,7 @@ export async function retro(ctx: Ctx, sinceIso: string): Promise<void> {
       '- Do not loosen any rule in `factory/config.json` (human-review paths, caps, merge mode). You may propose that in `notChanged` for a human to decide.',
       '- Keep `docs/factory/retro/' + date + '.md` and append a section 「変えたこと」 listing each change and the evidence it answers.',
       '- If nothing deserves a change, change nothing and say so.',
+      '- To add a review eval: make the change for real in this worktree, save `git diff` as `change.patch`, then restore the file. Never write a patch by hand. The patch must apply to `origin/main` and must not be something `origin/main` already contains. See the existing cases in `factory/evals/reviews/` for `meta.json`.',
       '- Commit your changes. Do not push.',
     ].join('\n')
     const r = await runClaude<{ changed: boolean; summary: string; notChanged: string }>({
@@ -125,6 +126,10 @@ export async function retro(ctx: Ctx, sinceIso: string): Promise<void> {
       G.git(['add', '-A'], wt)
       G.git(['commit', '-q', '-m', `docs(factory): retro ${date}`], wt)
     }
+    // The adoption gate: a retro PR arrives with the eval run on its own prompts and eval set,
+    // so a human compares results instead of trusting the retro's own account.
+    const before = latestEval(ctx)
+    const evals = await runEvals({ ...ctx, promptDir: join(wt, 'factory/prompts') }, join(wt, 'factory/evals'), [])
     G.push(wt, branch)
     const body = [
       `ファクトリのふりかえり（${sinceIso} 以降の ${recent.length} 件）`,
@@ -137,7 +142,15 @@ export async function retro(ctx: Ctx, sinceIso: string): Promise<void> {
       '',
       `検証: ${v.ok ? 'pnpm verify が通った' : 'pnpm verify が落ちた'}`,
       '',
-      'マージの前に、変えたプロンプトで `pnpm factory eval` を回して、前回の結果と比べること',
+      '## このブランチのプロンプトと eval で回した結果',
+      '',
+      renderEvals(evals),
+      '',
+      '## 前回の eval の結果',
+      '',
+      before,
+      '',
+      '採否は人間が決める。前回通っていた eval が落ちていないか、足した eval が当たっているかを見る',
     ].join('\n')
     const url = ctx.gh.raw(['pr', 'create', '--draft', '--head', branch, '--base', ctx.cfg.baseBranch, '--title', `factory: ふりかえり ${date}`, '--body-file', '-'], body).trim()
     log(`retro PR: ${url}`)
