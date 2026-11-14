@@ -68,13 +68,13 @@ export default async function ExploreFoodDetailPage({
             brand: { '@type': 'Brand', name: food.brand },
             category: 'キャットフード',
             description: `${food.brand} ${food.product_name} - ${typeLabel} / ${ageLabel}`,
-            ...(stats && stats.total_logs > 0 && stats.avg_appetite !== null ? {
+            ...(stats && stats.totalRecords > 0 && stats.avgAppetite !== null ? {
               aggregateRating: {
                 '@type': 'AggregateRating',
-                ratingValue: stats.avg_appetite.toFixed(1),
+                ratingValue: stats.avgAppetite.toFixed(1),
                 bestRating: '5',
                 worstRating: '1',
-                ratingCount: stats.total_logs,
+                ratingCount: stats.totalRecords,
               },
             } : {}),
           }),

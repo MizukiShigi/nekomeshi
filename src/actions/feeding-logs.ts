@@ -360,7 +360,9 @@ export async function deleteFeedingLog(logId: string) {
     .eq('id', logId)
     .single()
 
-  if (!log || (log as any).cats?.profile_id !== user.id) {
+  // PostgREST returns this many-to-one embed as an object, while the generated types say array
+  const cat = Array.isArray(log?.cats) ? log.cats[0] : log?.cats
+  if (!log || cat?.profile_id !== user.id) {
     return { error: '削除権限がありません' }
   }
 
