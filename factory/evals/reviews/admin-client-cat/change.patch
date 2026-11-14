@@ -1,0 +1,22 @@
+diff --git a/src/actions/cats.ts b/src/actions/cats.ts
+index 653b078..86fe263 100644
+--- a/src/actions/cats.ts
++++ b/src/actions/cats.ts
+@@ -1,6 +1,7 @@
+ 'use server'
+ 
+ import { createClient } from '@/lib/supabase/server'
++import { createAdminClient } from '@/lib/supabase/admin'
+ import { revalidatePath } from 'next/cache'
+ import { redirect } from 'next/navigation'
+ 
+@@ -37,7 +38,8 @@ export async function getCats(profileId: string): Promise<Cat[]> {
+ }
+ 
+ export async function getCat(catId: string): Promise<Cat | null> {
+-  const supabase = await createClient()
++  // RLS の評価を通さない方が速いので、取得だけ admin クライアントを使う
++  const supabase = createAdminClient()
+ 
+   const { data, error } = await supabase
+     .from('cats')

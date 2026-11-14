@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit && tsc -p factory --noEmit",
+    "test": "vitest run",
+    "verify": "pnpm lint && pnpm typecheck && pnpm test",
+    "factory": "node factory/src/cli.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.9.0",
@@ -27,6 +31,7 @@
     "eslint": "^9",
     "eslint-config-next": "15.5.14",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^3"
   }
 }
