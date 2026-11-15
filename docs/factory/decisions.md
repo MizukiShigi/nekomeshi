@@ -117,3 +117,9 @@
 
 - 決めたこと: ファクトリが作る PR のブランチは `factory/issue-<n>`、ふりかえりは `factory/retro-<日時>`。人間が手で出すファクトリの修正は `chore/` で始める
 - 理由: 最初は `factory/` で始まるブランチをすべてファクトリの PR として数え、人間が出した修正 PR で上限に達して Issue を拾わなかった（#31、#32 で直した）
+
+## 18. Claude の課金は API キーに固定し、設定に書く
+
+- 決めたこと: `factory/config.json` の `auth.apiKeyEnv` が指す環境変数の API キーで課金する（既定は `ANTHROPIC_API_KEY`）。起動時に、キーがあることと、`claude auth status` の `apiKeySource` がそのキーになることを確かめ、満たさなければエージェントを動かす前に止める。実行記録に課金先を残す
+- 理由: 環境に `ANTHROPIC_API_KEY` があると、Claude Code は claude.ai のログインよりキーを優先する。最初の夜の実行は、ランナーを起動したシェルの `~/.zshrc` にあったキーで課金されていて、文書の「ログイン済みの claude を使う」と食い違っていた。課金先がシェルしだいで変わらないようにする
+- 実行記録の費用（Claude Code の `total_cost_usd`）は、API の定価で計算した見積もりなので、API キーでの課金と同じ物差しで比べられる

@@ -81,10 +81,14 @@ pnpm factory issue 23       # 1件だけ
 pnpm factory metrics        # GitHub の実行記録から指標を出す
 pnpm factory eval           # このワークツリーのプロンプトで eval を回す
 pnpm factory retro          # ふりかえりの PR を出す
+pnpm factory auth           # Claude の課金先の API キーを確かめる
 ```
 
 - Issue は手元で Claude Code に `/factory-issues` と頼んで作る（[skill](../../.claude/skills/factory-issues/SKILL.md)）
-- ランナーは、`gh` と `claude` にログインしていて、このリポを clone した端末で動かす
+- ランナーは、このリポを clone した端末で動かす。要るもの:
+  - Node 22.18 以上（TypeScript をそのまま実行する）
+  - `gh` のログイン（Issue、PR、ラベルの操作と push の名義）
+  - `claude` と API キー。Claude の課金は `factory/config.json` の `auth.apiKeyEnv` が指す環境変数の API キーに固定している（既定は `ANTHROPIC_API_KEY`）。claude.ai のログインは使わない。キーがなければ起動前に止まる。`pnpm factory auth` で確かめられる
 - ランナーの状態（ワークツリー、ログ、eval の結果）は `.factory/` に置く。git には入れない
 
 ## ラベル
