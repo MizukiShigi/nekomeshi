@@ -22,6 +22,8 @@ export type Ctx = {
   factorySha: string
   // Evals point this at a working tree to try prompt changes before they are merged.
   promptDir: string | null
+  // Which credential Claude is billed to, recorded on every run.
+  auth: string
 }
 
 export function log(msg: string): void {
@@ -42,6 +44,7 @@ export function loadCtx(repoDir: string, opts: { local?: boolean } = {}): Ctx {
     gh: new Gh(cfg.repo),
     factorySha: G.baseSha(repoDir, cfg.baseBranch).slice(0, 7),
     promptDir: opts.local ? join(repoDir, 'factory/prompts') : null,
+    auth: '',
   }
 }
 
@@ -333,6 +336,7 @@ function newRecord(ctx: Ctx, kind: RunRecord['kind'], issue: number): RunRecord 
     reasons: [],
     steps: [],
     models: { ...ctx.cfg.models },
+    auth: ctx.auth,
   }
 }
 

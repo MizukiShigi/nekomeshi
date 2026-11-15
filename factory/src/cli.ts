@@ -2,6 +2,7 @@ import { existsSync, rmSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { renderEvals, runEvals } from './evals.ts'
 import { collect, summarize } from './metrics.ts'
+import { requireApiKey } from './auth.ts'
 import { loadCtx, log, openFactoryPrs, processFixRequest, processIssue, type Ctx } from './pipeline.ts'
 import { sleep } from './proc.ts'
 import { retro } from './retro.ts'
@@ -13,7 +14,8 @@ const USAGE = `usage: pnpm factory <command>
   metrics             print run metrics from GitHub
   eval [ids...]       run evals with the prompts in this working tree
   retro [--since ISO] open a retro PR that proposes changes to the factory
-  labels              create the labels the factory uses`
+  labels              create the labels the factory uses
+  auth                check which API key Claude will be billed to`
 
 function lock(ctx: Ctx): () => void {
   const f = join(ctx.stateDir, 'runner.lock')
@@ -41,8 +43,14 @@ async function main(): Promise<void> {
   }
   if (cmd === 'eval') {
     const ctx = loadCtx(repoDir, { local: true })
+    ctx.auth = requireApiKey(ctx.cfg)
     const results = await runEvals(ctx, join(repoDir, 'factory/evals'), rest)
     console.log(renderEvals(results))
+    return
+  }
+  if (cmd === 'auth') {
+    // A diagnostic, so it reads this working tree's config: a new key setting can be checked before it reaches main.
+    console.log(`Claude is billed to ${requireApiKey(loadCtx(repoDir, { local: true }).cfg)}`)
     return
   }
   const ctx = loadCtx(repoDir)
@@ -60,6 +68,7 @@ async function main(): Promise<void> {
     console.log(summarize(records, prs))
     return
   }
+  ctx.auth = requireApiKey(ctx.cfg)
   const unlock = lock(ctx)
   try {
     if (cmd === 'issue') await processIssue(ctx, Number(rest[0]))
@@ -71,7 +80,9 @@ async function main(): Promise<void> {
       const i = rest.indexOf('--watch')
       const every = i >= 0 ? Number(rest[i + 1]) : 0
       for (;;) {
-        await runOnce(loadCtx(repoDir))
+        const c = loadCtx(repoDir)
+        c.auth = requireApiKey(c.cfg)
+        await runOnce(c)
         if (!every) break
         await sleep(every * 60_000)
       }

@@ -23,6 +23,7 @@ export type RunRecord = {
   reasons: string[]
   steps: StepCost[]
   models: Record<string, string>
+  auth?: string
 }
 
 export function totalCost(r: RunRecord): number {
@@ -46,7 +47,7 @@ export function renderRecord(r: RunRecord): string {
     `- 結果: ${OUTCOME_JA[r.outcome]}`,
     `- 修正の回数: ${r.fixRounds}`,
     `- 受け入れ条件: ${r.acceptance.met}/${r.acceptance.total} を満たした`,
-    `- 時間: ${mins} 分 / 費用: $${totalCost(r).toFixed(2)}`,
+    `- 時間: ${mins} 分 / 費用: $${totalCost(r).toFixed(2)}${r.auth ? `（${r.auth}）` : ''}`,
   ]
   if (r.reasons.length) lines.push(`- 理由: ${r.reasons.join(' / ')}`)
   if (r.merge?.reasons.length) lines.push(`- 人間に回した理由: ${r.merge.reasons.join(' / ')}`)

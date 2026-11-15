@@ -13,6 +13,7 @@ export type FactoryConfig = {
     judgeNeedsReview: string
     judgeSkipReview: string
   }
+  auth: { apiKeyEnv: string }
   models: { implement: string; review: string; fix: string; retro: string }
   budgetsUsd: { implement: number; review: number; fix: number; retro: number }
   timeoutsMin: { implement: number; review: number; fix: number; retro: number; github: number }
@@ -33,5 +34,6 @@ export function parseConfig(text: string): FactoryConfig {
   }
   if (!['off', 'shadow', 'on'].includes(c.merge?.mode)) throw new Error('config.merge.mode must be off|shadow|on')
   if (!(c.maxFixRounds >= 0)) throw new Error('config.maxFixRounds missing')
+  if (typeof c.auth?.apiKeyEnv !== 'string' || !c.auth.apiKeyEnv) throw new Error('config.auth.apiKeyEnv missing')
   return c
 }
