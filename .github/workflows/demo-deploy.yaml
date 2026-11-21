@@ -1,0 +1,94 @@
+# GitHub Environments の承認待ちを体験するためのデモ。実際のデプロイはしない。
+# 手順は docs/demo-deploy.md を参照。
+name: Demo deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: demo-deploy
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: 成果物を作る
+        run: |
+          mkdir -p dist
+          {
+            echo "commit: ${GITHUB_SHA}"
+            echo "built_at: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          } > dist/release.txt
+          cat dist/release.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release
+          path: dist/release.txt
+      - name: Job Summary
+        run: |
+          {
+            echo "## ビルド"
+            echo "成果物 \`release.txt\` を作り、artifact \`release\` として保存しました。この同じ成果物を stg、本番の順に進めます。"
+            echo '```'
+            cat dist/release.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  deploy-stg:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment:
+      name: stg
+      url: https://example.com/stg
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: release
+      - name: stg にデプロイする（デモ）
+        run: |
+          echo "stg にデプロイしました（デモのため実際には何もしていません）"
+          cat release.txt
+      - name: Job Summary
+        run: |
+          {
+            echo "## stg へのデプロイ"
+            echo "ビルドした成果物を stg にデプロイしました（デモ）。stg には承認ルールがないため、すぐに実行されます。"
+            echo '```'
+            cat release.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  deploy-production:
+    needs: deploy-stg
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment:
+      name: production
+      url: https://example.com/production
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: release
+      - name: 本番にデプロイする（デモ）
+        run: |
+          echo "本番にデプロイしました（デモのため実際には何もしていません）"
+          cat release.txt
+      - name: Job Summary
+        run: |
+          {
+            echo "## 本番へのデプロイ"
+            echo "承認を受けて、stg と同じ成果物を本番にデプロイしました（デモ）。"
+            echo "承認者と承認時刻は、この実行の画面上部と Deployments 画面で確認できます。"
+            echo '```'
+            cat release.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
