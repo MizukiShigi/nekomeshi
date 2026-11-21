@@ -41,3 +41,7 @@ pnpm verify
 ```
 
 詳しい設計やコーディング規約は [CLAUDE.md](./CLAUDE.md) を参照してください。
+
+## デモ: 本番デプロイの承認
+
+本番デプロイを承認で止める流れを試すデモがあります。触り方は [docs/demo-deploy.md](./docs/demo-deploy.md) を参照してください。
